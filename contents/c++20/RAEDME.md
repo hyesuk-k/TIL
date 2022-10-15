@@ -1,23 +1,9 @@
-# c++ 20
+# c++ 20 관련된 자료
 
-> 📚 
-<div>
-<img src="https://img.shields.io/badge/C++-00599C?logo=cplusplus&logoColor=white&style=flat-square">
-</div>
+## 전체
 
-## Table of Contents 
+* [c++ 20 신규 기능 정리](https://kukuta.tistory.com/220)
 
-* [c++20 study]()
+## Modules
 
-
-## c++20 study
-
-* base : c++20 풍부한 예제로 익히는 핵심 기능
-
-### 3장 핵심언어
-    
-* 3.1 Concepts
-
-
-
-
+* [cpp reference : modules](https://en.cppreference.com/w/cpp/language/modules)
