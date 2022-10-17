@@ -3,6 +3,7 @@
 <div> <img src="https://img.shields.io/badge/C++-00599C?logo=cplusplus&logoColor=white&style=flat-square"> </div>
 
 * [Big Thing C++ 20](https://www.modernescpp.com/index.php/c-20-an-overview)
+* [modern c++ tutorial](https://github.com/changkun/modern-cpp-tutorial)
 
 
 # Table of Contents 
