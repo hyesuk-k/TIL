@@ -7,16 +7,5 @@
 
 # Table of Contents 
 
-* [Concepts](https://github.com/hyesukk/TIL/edit/main/contents/c++20/RAEDME.md#31-concepts)
-* [Module](https://github.com/hyesukk/TIL/edit/main/contents/c++20/RAEDME.md#32-module)
+* [Concepts](https://github.com/hyesukk/TIL/blob/main/contents/c%2B%2B20/3_concepts.md#31-concepts)
 
-## c++20 풍부한 예제로 익히는 핵심 기능
-
-### 3.1 Concepts
-
-* [back-to-contents](https://github.com/hyesukk/TIL/edit/main/contents/c++20/RAEDME.md#table-of-contents)
-
-
-### 3.2 Module
-
-* [back-to-contents](https://github.com/hyesukk/TIL/edit/main/contents/c++20/RAEDME.md#table-of-contents)
