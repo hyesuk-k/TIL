@@ -5,18 +5,26 @@
 - [Concepts 란?](#concepts-란)
 - [Motivation](#motivation)
 - [Advantages](#advantages)
-- [Concept 사용 방법](#concept의-사용-방법)
+- [Concept의 사용](#concept의-사용)
+- [Concept 적용 방법](#concepts를-적용하는-방법)
 - [미리 정의된 concepts](#미리-정의된-concepts)
 
 
 ## Concepts 란?
 
 * cppreference : [concepts](https://en.cppreference.com/w/cpp/language/constraints)
-* [concpt wiki](https://ko.wikipedia.org/wiki/%EC%BD%98%EC%85%89%ED%8A%B8_(C%2B%2B))
+* [concept wiki](https://ko.wikipedia.org/wiki/%EC%BD%98%EC%85%89%ED%8A%B8_(C%2B%2B))
 
 * C++20부터 지원
 * 템플릿의 확장 기능
-* 템플릿에서 사용하는 매개변수에 제약을 가함
+* 템플릿에서 사용하는 매개변수에 제약(조건)을 정의
+* concepts로 정의된 제약을 만족하는 경우에만 템플릿을 이용하여 함수를 생성 가능
+
+
+* concept에 사용되는 키워드
+    + _concept_
+    + _requires_
+
 
 ## Motivation
 
@@ -73,7 +81,31 @@ auto sum(auto first, auto second) {
 }
 ```
 
-## Concept의 사용 방법
+## Concept의 사용
+
+### concepts 정의 방법
+
+```cpp
+#include <concepts>
+
+template <template-param-list; typedef T or Class T or Arg list...>
+concepts concept-name = constraint-expression;
+```
+
+### Concepts clause
+
+* concepts 선언 예제
+* concept를 이용한 conecepts 가능 
+
+```cpp
+#include <concepts>
+
+template<typename T>
+concept underHundred = std::integral<T> && sizeof(T) <= 100;
+```
+
+
+## concepts를 적용하는 방법
 
 1. requires 절
 2. 후행 (trailing) requires 절
