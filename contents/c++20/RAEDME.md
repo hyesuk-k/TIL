@@ -10,5 +10,6 @@
 # Table of Contents 
 
 * [Concepts](https://github.com/hyesukk/TIL/blob/main/contents/c%2B%2B20/3-1_concepts.md#31-concepts)
-
+* [Modules](https://github.com/hyesukk/TIL/blob/main/contents/c%2B%2B20/3-2_module.md)
+* [Spaceship operator](https://github.com/hyesukk/TIL/blob/main/contents/c%2B%2B20/3-3_spaceship_operator.md)
 
