@@ -21,7 +21,7 @@
     + A == B : 0
     + A > B  : 1
 * spaceship operator || three-way comparison operator
-* 3중 비교 연산자를 컴파일러가 자동으로 생성하게 하려면 <b><compare> 헤더를 포함</b>해야 함
+* 3중 비교 연산자를 컴파일러가 자동으로 생성하게 하려면 <b>\<compare> 헤더를 포함</b>해야 함
 
 ## 3.3.1 C++20 이전의 순서 판정
 
@@ -162,11 +162,16 @@ int main() {
     + 강 순서를 지원하는 형식은 암묵적으로 약 순서와 부분 순서를 지원한다.
     + 약 순서를 지원하는 형식은 암묵적으로 부분 순서를 지원한다.
 
-* 3중 비교 연산자의 반환 형식을 auto로 지정하면, 실제 반환 형식은 비교할 객체의 기반 객체와 멤버 하위 객체, 멤버 배열 요소들의 공통 비교 범부에 따라 결정됨
+* 3중 비교 연산자의 반환 형식을 auto로 지정하면, 실제 반환 형식은 비교할 객체의 기반 객체와 멤버 하위 객체, 멤버 배열 요소들의 공통 비교 범주에 따라 결정됨
+
+
+* equivalent
+    + equiv(a, b), an expression equivalent to !comp(a, b) && !comp(b, a) [참고](https://en.cppreference.com/w/cpp/named_req/Compare)
+
 
 ## 3.3.4 컴파일러 생성 우주 연산자
 
-* 컴파일러에 의해 저동으로 3중 비교 연산자를 생성하려면 <compare> header 필요
+* 컴파일러에 의해 자동으로 3중 비교 연산자를 생성하려면 \<compare> header 필요
 * 컴파일러에 의해 자동으로 생성된 3중 비교 연산자는 암묵적으로 constexpr와 noexcept가 적용됨
     + constexpr은 기본적으로 const와 같은 상수를 의미
     + noexcept는 해당 함수는 예외를 발생시키지 않음을 의미
@@ -239,14 +244,19 @@ int main() {
     + a에서 형식 b로 변환이 안되는 경우 : 0 OP (b <=> a) 와 같이 표현
 
 * rewritten expression의 강점?
+    + <=> 의 결과는 binary result
+    + 관계형 연산의 관점에서 순서를 표현가능
 
-```
+<details>
+  <summary>발췌</summary>
+
 You may find yourself asking why this rewritten expression is valid and correct.
 The correctness of the expression actually stems from the semantics the spaceship operator provides.
 The <=> is a three-way comparison which implies that you get not just a binary result, but an ordering (in most cases) and if you have an ordering you can express that ordering in terms of any relational operations. 
 A quick example, the expression 4 <=> 5 in C++20 will give you back the result std::strong_ordering::less. 
 The std::strong_ordering::less result implies that 4 is not only different from 5 but it is strictly less than that value, this makes applying the operation (4 <=> 5) < 0 correct and exactly accurate to describe our result.
-```
+
+</details>
 
 ## 3.3.6 사용자 정의 연산자와 컴파일러 생성 연산자
 
