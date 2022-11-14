@@ -9,6 +9,7 @@
 
 ## Designated initializers
 
+* 집합체 초기화의 특수한 사례
 * 구조체나 클래스의 멤버 변수를 초기화할 때, 지정자 (Designator)를 사용하여 어떤 변수를 초기화 할 지 명시
 * 특정 변수를 지정하여 초기화 가능
 
@@ -25,6 +26,12 @@ int main() {
     // A v4{1000, 2000, .z= 3000};  // ERROR, either all initializer clauses should be designated or none of them should be
 }
 ```
+
+* 집합체 초기화 (aggregate initialization)
+    + private 멤버나 protected 멤버, 비정적(non-static) 멤버가 없다
+    + 사용자 정의 생성자나 상속된 생성자가 없다
+    + 가상(virtual), 비공개, 보호된 기반 클래스가 없다
+    + 가상 멤버 함수가 없다
 
 
 ### 사용 방법 및 주의사항
