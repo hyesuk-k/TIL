@@ -21,13 +21,16 @@
     + 할당된 후 값을 변경할 수 없음
     + const
         - runtime constant
-        - compile-time OR runtime에 값이 결정될 수 있음        - 
+        - compile-time OR runtime에 값이 결정될 수 있음
     + constexpr (since C++11)
         - compile-time constant expression
-        - compile-time에만 값(변수/함수 반환)이 결정될 수 있음
+        - compile-time에만 값(변수/함수 반환 값)이 결정될 수 있음
+        - constexpr function은 무조건 compile-time에 리턴값이 산출되지 않음 (param이 compile-time 상수냐에 따라 다름)
         - 변수명으로 초기화 불가능 (array의 크기)
         - macro 대신 사용 가능 - 함수 앞에 constexpr이 붙는 경우 inline 함수로 암시됨
         - [literals](https://en.cppreference.com/w/cpp/named_req/LiteralType) : scalar (int, float, ...), reference, array 등
+
+* 함수 선언 시, consteval/ constinit/ constexpr 중 하나의 keyword만 사용 가능
 
 ```cpp
 int getRandomInt() {
@@ -44,12 +47,15 @@ int main() {
 ## consteval
 
 * 즉시 함수(immediate function)를 생성하는 지정자, 해당 함수는 compile-time constant
-* 소멸자, 메머리 할당 또는 재할당 함수에는 consteval keyword 사용 불가
-* 함수 선언 시, consteval/ constinit/ constexpr 중 하나의 keyword만 사용 가능
 * consteval keyword를 사용한 함수는 암묵적으로 inline 함수
-
+* immediate function이 inline 함수가 되는 조건
+    + 소멸자, 메머리 할당 또는 재할당 함수에는 consteval keyword 사용 불가
+    + constexpr 함수의 요구조건 (허용)
+    + constexpr 함수의 요구조건 (허용 불가)
 
 * constexpr 함수와 consteval 함수의 차이
+    + constexpr 함수 : 최적화에 따라 compile-time or run-time
+    + consteval 함수 : 반드시 compile-time 
 ```cpp
 constexpr int mulTenC(int v) {
     return v*10;
@@ -84,8 +90,8 @@ int main() {
 * const와 같이 사용 가능 (constinit const Var OR const constinit Var)
 
 * static 또는 thread storage를 가지는 변수를 선언
-    + static initialization (전역변수, 정적 변수)
-    + [thread storage duration](https://en.cppreference.com/w/c/language/thread_storage_duration) (since C++11)
+    + static storage : 전역변수(namespace), static 변수, static 클래스의 멤버변수
+    + [thread storage duration](https://en.cppreference.com/w/c/language/thread_storage_duration) (since C++11) : thread_local 을 이용하여 선언된 변수 또는 스레드의 생명 주기 동안 유지되는 변수
 
 * constinit 선언된 변수에 동적 초기화 사용 불가
 
