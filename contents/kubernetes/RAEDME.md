@@ -1,5 +1,5 @@
 # k8s study
-
+<!-- markdownlint-disable -->
 ## AWS Certified Solutions Architect – Associate Certification
 
 [AWS Associate architect](https://aws.amazon.com/ko/certification/certified-solutions-architect-associate/)
@@ -17,6 +17,7 @@
 ### exams (open)
 
 * https://www.examtopics.com/exams/amazon/aws-certified-solutions-architect-associate-saa-c03/
+* 참고 : https://kubernetes.io/ko/
 
 ### blogs
 
