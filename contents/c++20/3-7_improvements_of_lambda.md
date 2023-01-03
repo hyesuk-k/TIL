@@ -160,9 +160,15 @@ int main() {
 
 ### 개선된 람다를 이용한 STL 연관 컨테이너 적용
 
-- 내용 추가 에정
+- Association container
+  - key와 value처럼 관련있는 데이터를 하나의 쌍으로 저장하는 container
+  - 데이터에 대한 빠른 접근을 제공 가능
+  - insert시 데이터 위치 지정 불가 (자동 정렬)
+  - 이진 탐색 트리나 해시 테이블 등을 이용하여 구현 가능
+  - set / multiset / map / multimap / unordered_XXX
 
 ## Refs
 
 - [cpprefs-lambda](https://en.cppreference.com/w/cpp/language/lambda)
 - [모두의코드-람다함수](https://modoocode.com/196)
+- [C++ 이야기-연관컨테이너](https://wikidocs.net/117601)
