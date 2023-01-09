@@ -34,12 +34,12 @@ int func2();
   - 함수 완료 후 not return control flow to the calling function
   - 즉, 함수를 호출한 함수로 control flow가 전달되지 않음을 의미
   - noreturn 표준 함수 예 : std::_Exit, std::exit, std::abort, std::terminate
-- [[carries_dependency]](C++11) : 해제-소비 순서(release-consume ordering)의 의존관계사슬(dependency chain)을 나타냄
-- [[deprecated]](C++14) : 해당 식별자를 사용하지 말아야 함을 의미
-- [[fallthrough]](C++17) : 해당 case의 떨어짐(fallthrough)이 의도적임을 나타냄
+- [[carries_dependency]] (C++11) : 해제-소비 순서(release-consume ordering)의 의존관계사슬(dependency chain)을 나타냄
+- [[deprecated]] (C++14) : 해당 식별자를 사용하지 말아야 함을 의미
+- [[fallthrough]] (C++17) : 해당 case의 떨어짐(fallthrough)이 의도적임을 나타냄
   - switch문의 case 블록이 break로 끝나지 않고, 다음 case 블록으로 넘어가는 것을 의미
-- [[maybe-unused]](C++17) : 사용되지 않은 식별자에 대한 컴파일러 경고 메시지 억제
-- [[nodiscard]](C++17) : 반환값 폐기를 검출
+- [[maybe-unused]] (C++17) : 사용되지 않은 식별자에 대한 컴파일러 경고 메시지 억제
+- [[nodiscard]] (C++17) : 반환값 폐기를 검출
   - 컴파일러에게 반환값이 폐기되는 경우, 컴파일 경고를 표기해달라는 힌트
 
 ## nodiscard 특성
