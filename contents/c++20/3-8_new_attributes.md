@@ -35,6 +35,8 @@ int func2();
   - 즉, 함수를 호출한 함수로 control flow가 전달되지 않음을 의미
   - noreturn 표준 함수 예 : std::_Exit, std::exit, std::abort, std::terminate
 - [[carries_dependency]] (C++11) : 해제-소비 순서(release-consume ordering)의 의존관계사슬(dependency chain)을 나타냄
+  - 매개변수에 선언되는 경우 : 매개변수의 초기화가 lvalue-to-rvalue 변환에 의존성을 가지고 있음
+  - 함수 선언 전체에 선언되는 경우 : return이 함수 호출 표현식에 대해 의존성을 가지고 있음
 - [[deprecated]] (C++14) : 해당 식별자를 사용하지 말아야 함을 의미
 - [[fallthrough]] (C++17) : 해당 case의 떨어짐(fallthrough)이 의도적임을 나타냄
   - switch문의 case 블록이 break로 끝나지 않고, 다음 case 블록으로 넘어가는 것을 의미
@@ -150,3 +152,4 @@ int main() {
 ## Refs
 
 - [New Attributes with C++20](https://www.modernescpp.com/index.php/new-attributes-with-c-20)
+- [모두의코드 C++11](https://modoocode.com/208)
