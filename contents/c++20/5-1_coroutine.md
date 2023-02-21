@@ -7,7 +7,6 @@
 
 - [개요](#개요)
 - [코루틴의 특징](#코루틴의-특징)
-- [대기 가능 객체와 대기자 객체](#대기-가능-객체와-대기자-객체)
 - [제어 흐름](#제어-흐름)
 - [co_return](#co_return)
 - [co_yield](#co_yield)
@@ -31,6 +30,10 @@
   - co_yield
     - generator 함수(호출할 때 새로운 값을 돌려주는 함수)의 구현에 사용됨
 - C++ 함수의 실행에 2가지 개념이 추가됨
+- 코루틴의 구성요서 (component)
+  - Operators & Awaitable type
+  - Promise
+  - Coroutine handle
 
 ## 코루틴의 특징
 
@@ -85,22 +88,137 @@
 
 ### 약속 객체
 
-- 추가
+- promise object는 코루틴 내부에서 조작됨
+- 약속 객체를 이용하여 자신의 결과 또는 예외를 전달함
+- 약속 객체는 반드시 아래 인터페이스를 지원해야 함
+
+|멤버 함수|설명|
+|:---:|:---:|
+|기본 생성자|약속 객체는 반드시 기본 생성 가능이어야 함|
+|initial_suspend()|코루틴이 일시 정지 상태로 시작하는지의 여부를 돌려줌|
+|final_suspend() noexcept | 코루틴이 일시 정지 상태로 종료되는지 여부를 돌려줌|
+|unhandled_exception() | 예외가 발생하면 호출됨|
+|get_return_object|코루틴 객체 (재개 가능 객체)를 돌려줌|
+|return_value(val)|co_return val에 의해 호출됨|
+|return_void()|co_return에 의해 호출됨|
+|yield_value(val)|co_yield val에 의해 호출됨|
+
+- 멤버 함수들은 코루틴 실행 중 컴파일러가 자동으로 호출함
+- 약속 객체에는 return_value, return_void, yield_value 중 적어도 하나가 있어야 함
+- 대기 가능 객체는 코루틴이 일시 정지 되었는지 아닌지 판단하는 멤버 함수를 제공함
 
 ### 코루틴 핸들
 
-- 추가
+- 코루틴 프레임의 실행 재개나 파괴를 외부에서 제어하는 데 쓰이는 비소유(non-owing) 핸들
+- 코루틴 핸들은 재개 가능 함수의 한 부품
+- 재개 가능 객체에는 내부 형식 promise_type이 있어야 함
+  - 재개 가능 객체에는 반드시 promise_type이라는 내부 형식이 있어야 함
+
+- Promise interface
+  - promise_type을 통해 코루틴 실행 시, suspend 및 resume 지점에서 호출되는 interface를 정의하고 코루틴의 동작을 제어
+  - 비동기 함수 호출 시, 어떤 상태를 넘기기로 사전에 약속한 객체
 
 ### 코루틴 프레임
 
-- 추가
+- 코루틴의 상태를 담는 내부 객체, 흔히 내부 heap 영역에 할당됨
+- 코루틴 프레임의 구성
+  - 약속 객체와 코루틴 인수들의 복사본
+  - 일시 정지 지점(suspension point)를 나타내는 객체
+  - 일시 정지 지점에 도달 하기 전에 그 수명이 끝나는 지역 변수들
+  - 수명이 현재 일시 정지 지점 이후까지 연장되는 지역 변수들
+- 저장 공간 절약을 위해 컴파일러가 코루틴의 할당(allocation)을 최적화 하기 위한 2가지 조건
+  - 코루틴 객체의 수명이 코루틴 호출자의 수명 안에 포함되어야 함
+  - 코루틴 호출자가 코루틴 프레임의 크기를 알아야 함
+- 코루틴 프레임워크의 2가지 핵심 추상
+  - 대기 가능 객체
+  - 대기자 객체
 
-## 대기 가능 객체와 대기자 객체
+### 대기 가능 객체와 대기자 객체
 
-### 대기 가능 객체
+- 약속 객체의 세 멤버 함수 yield_value, inital_suspend, final_suspend는 대기 가능 객체를 돌려줌
+
+#### 대기 가능 객체
 
 - 대기 가능 객체 : 기다릴 수 있는 개체
 - 코루틴이 일시 정지(suspend) 중인지 아닌지를 판정
+- yield_value와 initial_suspend, final_suspend 멤버 함수에 대해 co_await 연산자를 적용함
+  - 멤버 함수 호출 전에 알아서 co_await 연산자를 적용해준다는 뜻인가..?
+
+|함수|컴파일러가 생성한 호출|
+|:---:|:---:|
+|prom_obj.yield_value(value)|co_await prom_obj.yield_value(value)|
+|prom_obj.initial_suspend()|co_await prom_obj.initial_suspend()|
+|prom_obj.final_suspend()|co_await prom_obj.final_suspend()|
+
+- 단항 연산자인 co_await은 대기 가능 객체를 인수로 받음
+- 대기 가능 객체의 형식은 Awaitable 콘셉트를 충족해야 한다
+
+#### Awaitable 객체
+
+- Awaitable 콘셉트는 3가지 멤버 함수를 요구함
+
+|멤버 함수|설명|
+|:---:|:---:|
+|await_ready|결과가 준비되었는지의 여부를 돌려줌, 이 멤버 함수가 false를 돌려주면 await_suspend가 호출됨|
+|await_suspend|코루틴의 실행 재개(resume) 또는 파괴(소멸)를 결정|
+|await_resume|co_await 표현식의 결과를 제공|
+
+- std::suspend_always
+  - 항상 코루틴을 일시 정지함
+  - await_ready 멤버 함수의 결과가 항상 false
+
+- std::suspend_never
+  - 코루틴을 일시 정지 하지 않음
+  - await_ready는 항상 true
+
+- suspend_always와 suspend_never는 initial_suspend나 final_suspend 같은 약속 객체 멤버 함수의 기본 구축 요소
+  - 두 함수는 코루틴이 실행되면 자동으로 호출됨
+  - 코루틴의 시작에 initial_suspend, 코루틴의 끝에서 final_suspend가 호출됨
+
+- initial_suspend
+  - suspend_always 또는 suspend_never에 따라 다르게 코루틴을 시작함
+
+```cpp
+// 코루틴을 일시 정지 상태로 시작함
+std::suspend_always initial_suspend() {
+  return {};
+}
+
+// 코루틴을 즉시 실행
+std::suspend_never initial_suspend() {
+  return {};
+}
+```
+
+- final_suspend
+  - suspend_always : 코루틴은 자신의 끝에서 일시 정지됨
+  - suspend_never : 코루틴은 끝에서 일시정지 되지 않음
+
+```cpp
+// 코루틴의 끝에서 일시 정지 됨
+std::suspend_always final_suspend() noexcept {
+  return {};
+}
+
+// 코루틴의 끝에서 일시정지 되지 않음
+std::suspend_never final_suspend() noexcept {
+  return {};
+}
+```
+
+#### 대기자 객체
+
+- 대기자 객체(Awaiter Ojbect) : 코루틴의 대기 가능 객체가 종료 또는 일시 정지되길 기다리는 객체
+- 대기자 객체가 되는 2가지 방법
+  - co_await 연산자를 정의
+  - 대기 가능 객체를 대기자 객체로 변환
+- 컴파일1러가 대기자 객체를 얻는 순서
+  - 약속 객체의 co_await 연산자가 있으면 그것을 적용하여 대기자 객체를 획득함
+    - awaiter = awaitable.operator co_await();
+  - 독립적인 co_wait 연산자가 있다면 그것으로 대기자 객체를 획득함
+    - awaiter = operator co_await();
+  - 두 co_wait 연산자 모두 없으면 대기 가능 객체로부터 대기자 객체를 얻음
+    - awaiter = awaitable;
 
 ## 제어 흐름
 
@@ -109,17 +227,65 @@
 
 ### 약속 객체 제어 흐름
 
-- 추가
+- 어떤 함수 내에서 co_yield나 co_await, co_return을 사용하면 그 함수는 코루틴이 됨
+- 컴파일러는 변환한 코드를 약속 객체의 멤버를 이용하여 자동으로 실행
+- 약속 객체를 이용한 제어 흐름 => 약속 제어 흐름
+- 약속 제어 흐름의 주요 단계
+  - 코루틴이 시작되면 컴파일러는 :
+    - 필요하다면 코루틴 프레임을 할당
+    - 모든 함수 매개변수를 코루틴 프레임에 복사
+    - 약속 객체를 생성
+    - 약속 객체.get_return_object()를 호출해서 코루틴 핸들을 생성하고 지역 변수에 저장, 호출 결과는 코루틴이 처음으로 일시 정지될 때 코루틴 호출자에게 반환됨
+    - 약속 객체.initial_suspend()를 호출하고 그 결과에 대해 co_await을 적용
+    - co_await 약속객체.initial_suspend()의 실행이 재개되면 코루틴의 본문을 실행함
+  - 코루틴이 일시 정지 지점에 도달하면 컴파일러는 :
+    - 이후 코루틴의 실행이 재개되면 앞에서 저장해 둔 반환 객체 (get_return_object())를 호출자에 돌려줌
+  - 코루틴이 co_return에 도달하면 컴파일러는 :
+    - co_return 또는 co_return <void 형식의 표현식> : 약속객체.return_void()를 호출
+    - co_return <void가 아닌 형식> : 약속객체.return_value(형식)을 호출
+    - 스택에 생성한 모든 변수를 파괴
+    - final_suspend()를 호출하고 그 결과에 co_await을 적용함
+  - 코루틴이 파괴되면(co_return이나, 기타 예외, 코루틴 핸들을 통한 코루틴 종료) 컴파일러는 :
+    - 약속 객체의 소멸자를 호출
+    - 함수 매개변수들의 소멸자를 호출
+    - 코루틴 프레임이 사용하던 메모리를 해제
+    - 제어 흐름을 다시 호출자에게 돌려줌
+  - 코루틴 안에서 잡히지 않은 예외(uncaught exception)이 발생하면 컴파일러는 :
+    - 그 예외를 해당 catch 문으로 잡아서 약속객체.unhandled_exception()을 호출
+    - ifnal_suspend()를 호출하고 그 결과에 co_await을 적용함
+  
+- 제어 흐름이 코루틴 안의 co_await 표현식에 도달하거나 컴파일러가 암묵적으로 initial_suspend()/final_suspend()/yield_value를 호출하면 대기자 제어 흐름이 시작됨
 
 ### 대기자 제어 흐름
 
-- 추가
+- 대기자 객체를 이용한 실행 흐름을 '대기자 제어 흐름'으로 부름
+- co_await 표현식을 컴파일러가 대기자 객체 멤버 함수 await_ready, await_suspend, await_resume을 이용한 코드로 변환
+
+- awaiteble.await_suspend()의 반환 형식에 따른 처리
+|형식|처리|
+|:---:|:---:|
+|void|코루틴을 일시 정지 상태로 두고 호출자에게 제어 흐름을 돌려줌|
+|bool|true : 계속 일시 정지 상태로 두고 호출자에게 제어 흐름을 돌려줌 / false : 코루틴의 실행을 재개, 제어 흐름은 호출자에게 돌아가지 않음|
+|기타 코루틴 핸들|해당 코루틴의 실행을 재개하고 호출자에게 제어 흐름을 돌려줌|
+
+- 코루틴 내에서의 예외
+  - await_ready
+    - 코루틴이 일시정지 되지 않음
+    - await_suspend 호출이나 await_resume의 호출을 평가하지 않음
+  - await_suspend
+    - 예외를 잡고, 코루틴의 실행을 재개하고, 예외를 다시 던짐
+    - await_resume은 호출하지 않음
+  - await_resume
+    - await_ready와 await_suspend를 평가하고 모든 값을 반환
+    - await_resume은 결과를 돌려주지 않음
 
 ## co_return
 
 - 코루틴은 return 대신 co_return을 사용
 - 코루틴을 완전히 종료하기 위해 사용
 - co_return 이후로는 resume할 수 없음
+- co_return을 만나면 스택에 생성된 모든 변수들이 생성 반대 순서로 해제됨
+- 약속객체.return_value(exprt) / 약속객체.return_void() 후에 co_await 약속객체.final_suspend()가 호출됨
 
 ```cpp
 Type<int> func() {
@@ -127,11 +293,11 @@ Type<int> func() {
 }
 ```
 
-### 미래 객체
-
 ## co_yield
 
 - caller에게 값을 전달하기 위해 사용
+- 값을 리턴하고 실행을 중지 및 제어 흐름을 넘기는 역할
+- co_return과 다르게 코루틴 함수 실행을 종료하지는 않음
 
 ```cpp
 generator<int> createNum() {
@@ -141,17 +307,28 @@ generator<int> createNum() {
     co_yield n;
   }
 }
+
+main() {
+  for (auto i : N) {
+    std::cout << createNum() << "\n";
+  }
+}
 ```
 
 ## co_await
 
-- 코루틴 중단을 위해 사용
+- 코루틴의 실행을 일시 정지하거나 재개
+- 실행 중인 함수를 멈추고 제어를 코루틴의 caller로 넘김
+- 제어를 받아 다시 실행될 때 해당 문장 이후로 이어서 실행함
+- co_await {awaitable} 로 대기자 객체를 사용하도록 되어 있음
 
 ```cpp
 resumable func() {
   co_await std::experimental::suspend_always(); // OR std::suspend_never
 }
 ```
+
+## 코루틴을 이용한 스레드 동기화
 
 ## 요약
 
@@ -168,3 +345,4 @@ resumable func() {
 - [wiki-coroutine](https://en.wikipedia.org/wiki/Coroutine)
 - [cppref-co_await](https://en.cppreference.com/w/cpp/language/coroutines#co_await)
 - [cppref-co_yield](https://en.cppreference.com/w/cpp/language/coroutines#co_yield)
+- [cpp-coroutine알아보기](https://luncliff.github.io/coroutine/ppt/[Kor]ExploringTheCppCoroutine.pdf)
