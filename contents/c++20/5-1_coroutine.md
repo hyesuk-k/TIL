@@ -346,3 +346,5 @@ resumable func() {
 - [cppref-co_await](https://en.cppreference.com/w/cpp/language/coroutines#co_await)
 - [cppref-co_yield](https://en.cppreference.com/w/cpp/language/coroutines#co_yield)
 - [cpp-coroutine알아보기](https://luncliff.github.io/coroutine/ppt/[Kor]ExploringTheCppCoroutine.pdf)
+- [coroutine-예시](https://kukuta.tistory.com/222)
+- [coroutine-예시-scs](https://www.scs.stanford.edu/~dm/blog/c++-coroutines.html)
