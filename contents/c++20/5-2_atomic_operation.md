@@ -6,6 +6,8 @@
 ## Contents
 
 - [개요](#개요)
+- [std::atomic_ref](#stdatomic_ref)
+- [원자적 스마트 포인터](#원자적-스마트-포인터)
 - [요약](#요약)
 - [Refs](#refs)
 
@@ -97,10 +99,153 @@ std::atomic_ref<Counters> cnt(counter);
 
 #### C++11의 std::atomic_flag
 
+- std::atomic_flag는 원자적 부울 (atomic boolean) 형식
+- boolean 객체의 상태를 true로 설정 혹은 false 로 해제(clear)
+- std::atomic_flag는 무잠금이 보장되는 유일한 atomic type
+- std::atomic_flag는 더 높ㅇ느 수준의 스레드 추상들을 구현하는 구축 요소로 사용됨
+- 한계 : 현재 상태를 수정하지 않고 조회만 하는 멤버 함수가 없음 (C++20에서 추가됨)
+
 #### C++20의 std::atomic_flag 확장
+
+- C++20에서 추가된 interface
+
+|멤버 함수|설명|
+|:---:|:---:|
+|atomicFlag.clear() | 원자적 플래그를 해제|
+|atomicFlag.test_and_set() | 원자적 플래그를 설정하고 기존 값을 돌려줌|
+|atomicFlag.test() (C++20) | 원자적 플래그의 값을 돌려줌|
+|atomicFlag.notify_one() (C++20) | 원자적 플래그를 기다리는 스레드 하나에 통지|
+|atomicFlag.notify_all (C++20) | 원자적 플래그를 기다리는 모든 스레드에 통지|
+|atomicFlag.wait(bo) (C++20) | 원자적 플래그가 바뀌어서 통지될 때까지 스레드의 실행을 차단|
+
+- C++20에서 추가된 test() 멤버 함수는 atomic_flag의 값을 변경하지 않고 그대로 돌려줌
+- wait, notify_one, notify_all은 스레드 동기화에 유용함
+- C++11과 달리 std::atomic_flag의 기본 생성자는 false로 초기화 됨
+
+- is_lock_free
+  - 모든 객체의 atomic operation이 lock-free 상태인지 체크하는 함수
+
+- std::atomic<T>::is_always_lock_free
+  - true if this atomic type is always lock-free (항상 lock-free인 경우)
+  - false if it is never or sometimes lock-free (lock-free가 아닌 경우가 존재할 때)
+
+- sample: promise와 future를 이용한 동기화
+
+```cpp
+#include <iostream>
+#include <future>
+#include <thread>
+#include <vector>
+
+std::vector<int> v{};
+
+void prepareWork(std::promise<void> p) {
+  v.insert(v.end(), {0, 1, 0, 3});
+  std::cout << "Sender: Data prepared." << "\n";
+  p.set_value();
+}
+
+void completeWork(std::future<void> f) {
+  std::cout << "Waiter: Waiting for data." << "\n";
+  f.wait();
+  v[2] = 2;
+  std::cout << "Waiter: Complete the work." << "\n";
+  for (auto i: v) std::cout << i << " ";
+  std::cout << "\n";
+}
+
+int main() {
+  std::promise<void> sendNotification;
+  auto waitForNotification = sendNotification.get_future();
+
+  std::thread t1(prepareWork, std::move(sendNotification));
+  std::thread t2(completeWork, std::move(waitForNotification));
+
+  t1.join();
+  t2.join();
+
+  std::cout << "\n";
+  return 0;
+}
+```
+
+- sample: std::atomic_flag를 이용한 동기화
+
+```cpp
+#include <iostream>
+#include <atomic>
+#include <thread>
+#include <vector>
+
+std::vector<int> v{};
+std::atomic_flag atomicFlag{};
+
+void prepareWork() {
+  v.insert(v.end(), {0, 1, 0, 3});
+  std::cout << "Sender: Data prepared." << "\n";
+  atomicFlag.test_and_set();  // data 준비 후 true로 설정
+  atomicFlag.notify_one();
+}
+
+void completeWork() {
+  std::cout << "Waiter: Waiting for data." << "\n";
+  atomicFlag..wait(false);
+  v[2] = 2;
+  std::cout << "Waiter: Complete the work." << "\n";
+  for (auto i: v) std::cout << i << " ";
+  std::cout << "\n";
+}
+
+int main() {
+  std::thread t1(prepareWork);
+  std::thread t2(completeWork);
+
+  t1.join();
+  t2.join();
+
+  std::cout << "\n";
+  return 0;
+}
+```
 
 ### std::atomic의 확장
 
+- C++20 에서 확장됨
+- float, double, long 과 같은 부동소수점 형식에 대한 std::atomic 특수화 추가
+- 멤버 함수 notify_one, notify_all, wait이 추가되어 std::atomic_flag 뿐만 아니라 std::atomic도 스레드 동기화에 사용 가능
+- std::atomic과 atd:atomic_ref의 모든 오나전 특수화와 부분 특수화(boolean, 정수, 부동소수점, 포인터)가 통지와 대기를 지원
+
 ## 요약
 
+- std::atomic_ref
+  - 참조되는 객체에 원자적 연산들을 적용함
+  - 참조되는 객체에 대한 읽기 연산과 쓰기 연산이 원자적이므로 동시에 여러 스레드가 접근해도 데이터 경쟁이 발생하지 않음
+  - 참조되는 객체의 수명은 반드시 atomic_ref의 수명보다 길어야 함
+
+- std::shared_ptr
+  - 제어 블록과 자원으로 구성
+  - 제어 블록은 thread-safe하지만 자원은 thread-safe하지 않음
+  - C++에는 원자적 스마트 포인터 형식인 std::atomic<`std::shared_ptr<T>`>와 std::atomic<`std::weak_ptr<T>`>가 추가됨
+
+- std::atomic_flag
+  - atomic boolean 형식으로 C++에서 무잠금이 보장되는 유일한 자료구조
+  - boolean 상태를 조회하는 멤버 함수와 스레드 동기화를 위한 멤버 함수가 도입됨
+
 ## Refs
+
+- [모두의 코드: C++ atomic](https://modoocode.com/271)
+- [모두의 코드: shared_ptr](https://modoocode.com/252)
+- [cppreference : is_lock_free](https://en.cppreference.com/w/cpp/atomic/atomic/is_lock_free)
+- [cppreference : is_always_lock_free](https://en.cppreference.com/w/cpp/atomic/atomic/is_always_lock_free)
+
+- std::shared_ptr
+  - shared_ptr를 통해 접근되는 객체의 수명은 공유 포인터가 공유된 소유권(shared ownership)을 통해 관리
+  - 모든 shared_ptr은 객체가 더 이상 필요하지 않게 된 시점에서 객체가 파괴됨을 보장하기 위해 협동함
+  - 객체가 가리키던 마지막 std::shared_ptr가 객체를 더 이상 가리키지 않게 되면, 그 std::shared_ptr는 자신이 가리키는 객체를 파괴함
+  - reference count (참조 횟수)
+    - shared_ptr이 자신이 객체를 가리키는 최후의 포인터임을 아는 방법
+    - shared_ptr의 생성자는 count를 증가시키고, 소멸자는 감소, 복사 배정 연산자는 증가와 감소를 모두 수행
+      - `sp1 = sp2;`에 의해 sp1이 가리키던 자원의 참조 횟수는 -1, sp2가 가리키던 자원의 참조 횟수는 +1
+  - 일반 포인터 크기의 2배
+  - 참조 횟수를 담을 메모리를 반드시 동적으로 할당해야 함
+  - 참조 횟수의 증가와 감소는 반드시 원자적 연산이여야 함
