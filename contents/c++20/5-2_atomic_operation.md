@@ -15,13 +15,32 @@
 
 - 원자적 참조와 원자적 스마트 포인터
 
+- pipelining(여러 개의 작업을 동시에 실행)을 위해 cpu나 컴파일러가 코드를 재배치하여 modification order가 변경됨
+- 모든 연산이 원자적
+  - 모든 스레드들의 수정 순서가 동일할 때
+  - 원자적 연산이 아닌 경우, 모든 스레드에서 같은 수정 순서를 보장하지 않으므로 개발자가 직접 동기화 작업이 필요
+
+- 원자적이란?
+  - CPU가 명령어 1개로 처리하는 명령으로 중간에 다른 스레드가 끼어들 여지가 전혀 없는 연산
+  - 원자처럼 쪼갤 수 없다는 의미로 atomic이라고 함
+  - mutex 없이도 원자적이므로 멀티 스레드 환경에서 연산 속도가 더 빠름
+  - C의 원자적 연산 : __sync_fetch_and_add / __sync_fetch_and_sub 등
+
 ## std::atomic_ref
 
-- 클래스 템플릿 std::atomic_ref는 참조되는 객체에 원자적 연산을 적용
+- 클래스 템플릿 std::atomic_ref는 참조 객체에 원자적 연산을 적용
 - 원자적 객체를 여러 쓰레드가 동시에 읽고 써도 데이터 경쟁(data race)가 발생하지 않음
 - 참조되는 객체의 수명은 반드시 atomic_ref의 수명보다 길어야 함
 - 어떤 객체를 한 atomic_ref가 참조한다면, 그 객체에 대한 다른 모든 접근도 atomic_ref를 통해 일어나야 함
 - atomic_ref가 참조하는 객체의 부분 객체들은 다른 atomic_ref를 통해 접근할 수 없음
+
+```cpp
+template< class T >
+struct atomic_ref;
+
+template< class T >
+struct atomic_ref<T*>;
+```
 
 ### std::atomic_ref의 특수화들
 
@@ -32,11 +51,16 @@
 #### 기본 템플릿
 
 - 기본 템플릿 std::atomic_ref는 trivially copyable 형식 T로 인스턴스 화 할 수 있음
+  - trivially copyable
+    - 얕은 복사(shallow copy)가 가능한 타입
+    - 단순히 메모리 블록을 복사하여 객체를 복사할 수 있음
+    - int, char, char*, 단순 복사 가능한 구조체 
+    - 아래에서 Counters는 trivially copyable 타입이므로 c2 = c1과 같이 단순 복사가 가능
+      - c1의 메모리 블록을 그대로 c2에 복사 가능하여 빠르게 처리됨
 
 ```cpp
 struct Counters {
-    int a;
-    int b;
+    int a; int b;
 };
 
 Counter counter;
@@ -71,6 +95,13 @@ std::atomic_ref<Counters> cnt(counter);
 - is_always_lock_free : 주어진 원자적 형식이 항상 lock-free인지 점검
 - load : 참조된 객체의 값을 atomic으로 반환한다
 - operator T : 참조된 객체의 값을 atomic으로 반환한다. load()와 동등
+- store : 참조된 객체의 값을 주어진 비원자적 객체로 원자적으로 대체
+- fetch_add, += / fetch_sub, -= : 원자적으로 주어진 값을 참조된 객체의 값에 더하거나 뺌
+- fetch_or, |= / fetch_and, &= / fetch_xor, ^= : 원자적으로 주어진 값과 참조된 객체의 비트 연산 수행
+- ++, -- : 참조된 객체를 원자적으로 증가 또는 감소 (전위 / 후위 모두 가능)
+- notify_one : 원자적 대기 연산 하나의 차단을 품
+- notify_all : 모든 원자적 대기 연산의 차단을 품
+- wait : 통지될 때까지 실행을 차단
 
 ## 원자적 스마트 포인터
 
@@ -233,10 +264,13 @@ int main() {
 
 ## Refs
 
+- [Atomic References with C++20](https://www.modernescpp.com/index.php/atomic-ref)
 - [모두의 코드: C++ atomic](https://modoocode.com/271)
+- [cppreference : trivially copyable C++11](https://en.cppreference.com/w/cpp/named_req/TriviallyCopyable)
 - [모두의 코드: shared_ptr](https://modoocode.com/252)
 - [cppreference : is_lock_free](https://en.cppreference.com/w/cpp/atomic/atomic/is_lock_free)
 - [cppreference : is_always_lock_free](https://en.cppreference.com/w/cpp/atomic/atomic/is_always_lock_free)
+- [c : __sync](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html)
 
 - std::shared_ptr
   - shared_ptr를 통해 접근되는 객체의 수명은 공유 포인터가 공유된 소유권(shared ownership)을 통해 관리
