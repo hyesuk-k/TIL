@@ -54,7 +54,7 @@ struct atomic_ref<T*>;
   - trivially copyable
     - 얕은 복사(shallow copy)가 가능한 타입
     - 단순히 메모리 블록을 복사하여 객체를 복사할 수 있음
-    - int, char, char*, 단순 복사 가능한 구조체 
+    - int, char, char*, 단순 복사 가능한 구조체
     - 아래에서 Counters는 trivially copyable 타입이므로 c2 = c1과 같이 단순 복사가 가능
       - c1의 메모리 블록을 그대로 c2에 복사 가능하여 빠르게 처리됨
 
