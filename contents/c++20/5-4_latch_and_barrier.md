@@ -41,9 +41,9 @@
 - upd의 기본값은 1
 - upd가 카운터보다 크거나 음수이면 미정의 행동임
 
-- 책에는 arrive_and_wait이 있는데... [cppreference.com](https://en.cppreference.com/w/cpp/experimental/latch)에는 count_down_and_wait이 있음
+- [cppreference.com](https://en.cppreference.com/w/cpp/thread/latch)에는 count_down_and_wait은 experimental 에 있던 내용 / c++20 나오면서 arrive_and_wait 이 됨
   - count_down(size_t n) 은 카운트를 n 만큼 감소 시키지만 대기하지 않음
-  - count_down_and_wait() 은 카운트를 1 감소시키고 카운트가 0이 될 때까지 대기
+  - arrive_and_wait() 은 카운트를 1 감소시키고 카운트가 0이 될 때까지 대기
   - wait() 은 카운트가 0이 될 때까지 대기
 
 ```cpp
@@ -58,7 +58,8 @@ std::latch start_latch{num_threads};
 std::latch end_latch{num_threads};
 
 void worker(int id) {
-    start_latch.count_down_and_wait(); // 차단된 상태에서 대기하고 카운트를 1 감소시킵니다.
+    // start_latch.count_down_and_wait(); // 차단된 상태에서 대기하고 카운트를 1 감소시킵니다.
+    start_latch.arrive_and_wait();
     std::cout << "Thread " << id << " is running.\n";
     end_latch.count_down(); // 작업이 완료되었으므로 카운트를 1 감소시킵니다.
 }
