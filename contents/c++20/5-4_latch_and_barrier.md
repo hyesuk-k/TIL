@@ -29,6 +29,7 @@
 ## std::latch
 
 - std::latch의 멤버 함수들
+
 |멤버 함수|설명|
 |:---:|:---:|
 |std::latch lat{cnt}|내부 카운터가 num인 std::latch 객체 lat을 생성|
@@ -97,6 +98,7 @@ int main() {
       - 호출 가능 객체의 실행이 끝나면 모든 스레드의 차단이 풀림
 
 - std::barrier의 멤버 함수
+
 |멤버 함수|설명|
 |:---:|:---:|
 |std::barrier bar{cnt} |내부 카운터가 cnt인 std::barrier 객체 bar를 생성|
